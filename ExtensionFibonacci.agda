@@ -55,7 +55,7 @@ import Data.Nat.Divisibility as Divisibility
 -- computes with the complexity of raising ``φ`` to the power ``n``,
 -- which via simply-recursive exponentiation is ``O(n)``.
 
--- 5 +sqrt[5] 0
+
 5ℚ : ℚ
 5ℚ = mkℚ (Int.+ 5) 0 coprime-5-1 where
   coprime-5-1 : Coprimality.Coprime 5 1
@@ -83,7 +83,7 @@ sqrt[5] = 0ℚ +sqrt[5] 1ℚ
 
 
 module _ where
-  open Nat hiding (_^_)
+  open Nat using (_+_)
   open import Data.Nat.Properties
 
   -- linear exponentiation
