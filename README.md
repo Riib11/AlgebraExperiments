@@ -1,12 +1,19 @@
 # README
 
-## Organization
+## Module Organization 
 
-- `ExtensionFibonacci.agda`
-- `FieldRational.agda`
-- `AlgebraicFieldExtension.agda`
-- `Field.agda`
-- `Subset.agda`
+```
+ExtensionFibonacci.agda         # closed-form fibonacci implementation
+
+Algebra/
+	Field/
+		Base.agda                      # formalization of mathematical field
+		Rational.agda                 # instantiation of the rational field
+		Extension/BySqrt.agda    # algebraic extension by posited square root
+
+Data/
+	Subset.agda                       # data type of A-terms that satisfy A-predicate
+```
 
 ## Extension Fibonacci
 
