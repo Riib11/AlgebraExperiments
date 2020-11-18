@@ -11,12 +11,12 @@ open import Data.Unit
 
 open import Algebra.Core
 
-open import Subset
-open import StructureField
-open import FieldRational
+open import Data.Subset
+open import Algebra.Field
+import Algebra.Field.Rational as FieldRat
 
-open import Data.Rational as Rat hiding (_+_; _*_; -_)
-import Data.Integer as Int
+open import Data.Rational as Rat using (ℚ; mkℚ; 0ℚ; 1ℚ; ½)
+open import Data.Integer as Int using (ℤ)
 open import Data.Nat as Nat using (ℕ; zero; suc)
 import Data.Nat.Coprimality as Coprimality
 import Data.Nat.Divisibility as Divisibility
@@ -37,23 +37,26 @@ import Data.Nat.Divisibility as Divisibility
 --   fibonacci-rec (suc (suc n)) = ficonacci-rec (suc n) + fibonacci-rec n
 -- For the sake of simplicity, assume we are working with fixed-size
 -- numerical representations, so that addition and multiplication are
--- constant. Each recursive call spawns 2 further calls, and the max call depth
--- is ``n``, so the resulting binary recursion-tree has height ``n``
--- (though all but one of the paths from root to leaf have length less than ``n``).
+-- constant-time. Each recursive call spawns 2 further calls, and
+-- the max call depth is ``n``, so the resulting binary recursion-tree has height ``n``
+-- (though all but one of the root-to-leaf-paths have length less than ``n``).
 -- For a binary tree of height ``n``, the number of nodes in the tree
 -- is less than ``2^n``. So, the time complexity of ``fibonacci-rec``
--- is ``O(log[2^n])``. We can show a slighter tighter bound, however.
+-- is ``O(log[2^n])``.
 
 -- ----------------------------------------------------------------
 -- Fibonacci via Closed Formula over ℚ[sqrt[5]]
 -- ----------------------------------------------------------------
 -- This module's implementation instead uses the closed formula
 -- ::
---   fibonacci-ext n = φ ^ n - (1 - φ) ^ n
+--   fibonacci-ext n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
 -- where ``φ = (1/2)(1 + sqrt[5])`` (the golden ratio).
--- Given constant-time addition and multiplication, this formula
--- computes with the complexity of raising ``φ`` to the power ``n``,
--- which via simply-recursive exponentiation is ``O(n)``.
+-- For the sake of simplicity, assume we are working with fixed-size
+-- numerical representations, so that addition, multiplication, and
+-- inversion are constant-time. Then this formula computes with
+-- the complexity of raising ``φ`` to the power ``n``,
+-- which via recursive exponentiation involves ``n`` multiplications
+-- and so is ``O(n)``.
 
 
 5ℚ : ℚ
@@ -62,13 +65,13 @@ import Data.Nat.Divisibility as Divisibility
   coprime-5-1 = Divisibility.∣1⇒≡1 ∘ proj₂
 
 
-open import AlgebraicFieldExtension _≡_ 5ℚ
-open IsField-AlgebraicExtensionBySqrt 0ℚ 1ℚ Rat._+_ Rat._*_ Rat.-_ FieldRational._⁻¹ isField-ℚ
+open import Algebra.Field.Extension.BySqrt _≡_ 5ℚ as Extension
+open Extension.IsField-ExtensionBySqrt 0ℚ 1ℚ Rat._+_ Rat._*_ Rat.-_ FieldRat._⁻¹ FieldRat.isField-ℚ
 
 
 -- the rationals extended by ``sqrt[5]``
 ℚ[sqrt[5]] : Set
-ℚ[sqrt[5]] = AlgebraicFieldExtensionBySqrt
+ℚ[sqrt[5]] = Extension.BySqrt
 
 _+sqrt[5]_ : ℚ → ℚ → ℚ[sqrt[5]]
 a +sqrt[5] b = a +sqrt[α] b
@@ -118,11 +121,13 @@ module _ where
 
 
 
--- the ``n``th fibonacci number is ``φ ^ n - (1 - φ) ^ n``
+-- the ``n``th fibonacci number is ``((φ ^ n) - ((1 - φ) ^ n)) / sqrt[5]``
 fibonacci-extended : ℕ → ℚ[sqrt[5]]
-fibonacci-extended n = (φ ^ n) -′ ((1#′ -′ φ) ^ n) where
-  open IsField isField-AlgebraicExtensionBySqrt
-
+fibonacci-extended n = ((φ ^ n) -′ ((1#′ -′ φ) ^ n)) *′ elem (sqrt[5]N ⁻¹′)
+  where
+    open IsField isField-ExtensionBySqrt
+    sqrt[5]N = sqrt[5] # (λ ())
+    
 
 -- the extended component of ``fibonacci-extended n`` is always ``0ℚ``
 postulate

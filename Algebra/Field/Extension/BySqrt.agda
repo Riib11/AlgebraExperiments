@@ -1,8 +1,7 @@
 open import Level
 open import Relation.Binary
 
-
-module AlgebraicFieldExtension {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (α : A) where
+module Algebra.Field.Extension.BySqrt {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (α : A) where
 
 
 open import Function
@@ -15,35 +14,32 @@ open import Data.Unit
 
 open import Algebra.Core
 open import Algebra.Structures
+open import Algebra.Field
 
-open import Subset
-open import StructureField
+open import Data.Subset
 
 
 -- ================================================================
--- Algebraic Field Extension (by square root)
+-- Algebraic Field Extension by Square Root
 -- ================================================================
 -- An alegebraic field extension is a field that is formed by
--- adding external elements to a field.
--- Specifically, we shall be dealing with the method of adding
--- a root that did not exist in the original field.
--- (If the root does not exist, then the new field is trivially
--- the same.)
+-- adding external elements to a field. Specifically, we shall be
+-- dealing with the method of adding a root that did not exist in
+-- the original field. (If the root does did exist, then the new
+-- field is trivially the same.)
 
 
 -- extend field on ``A`` with ``sqrt[α]``
-record AlgebraicFieldExtensionBySqrt : Set a where
+record BySqrt : Set a where
   constructor _+sqrt[α]_
   field
     internal : A
     external : A
 
-AE : Set a
-AE = AlgebraicFieldExtensionBySqrt
-     
-open AlgebraicFieldExtensionBySqrt public
-     
-module IsField-AlgebraicExtensionBySqrt
+open BySqrt public
+
+
+module IsField-ExtensionBySqrt
   (0# 1# : A)
   (_+_ _*_ : Op₂ A)
   (-_ : Op₁ A) (_⁻¹ : Op₁ (N _≈_ 0#))
@@ -54,26 +50,26 @@ module IsField-AlgebraicExtensionBySqrt
                
   -- extended versions of ``IsField`` fields
 
-  _≈′_ : Rel AE ℓ
+  _≈′_ : Rel BySqrt ℓ
   (a +sqrt[α] b) ≈′ (c +sqrt[α] d) = (a ≈ c) × (b ≈ d)
                                                     
-  0#′ : AE
+  0#′ : BySqrt
   0#′ = 0# +sqrt[α] 0#
                     
-  1#′ : AE
+  1#′ : BySqrt
   1#′ = 1# +sqrt[α] 0#
                     
-  _+′_ : Op₂ AE
+  _+′_ : Op₂ BySqrt
   (a +sqrt[α] b) +′ (c +sqrt[α] d) = (a + c) +sqrt[α] (b + d) 
                                                            
   -- extended multiplication that accounts for combined ``sqrt[α]`` terms
-  _*′_ : Op₂ AE
+  _*′_ : Op₂ BySqrt
   (a +sqrt[α] b) *′ (c +sqrt[α] d) = ((a * c) + (α * (b * d))) +sqrt[α] ((a * d) + (b * c))
                                                                                         
-  -′_  : Op₁ AE
+  -′_  : Op₁ BySqrt
   -′ (a +sqrt[α] b) = (- a) +sqrt[α] (- b)
 
-  _-′_ : Op₂ AE
+  _-′_ : Op₂ BySqrt
   x -′ y = x +′ (-′ y)
 
   postulate
@@ -90,8 +86,8 @@ module IsField-AlgebraicExtensionBySqrt
       (*| _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′ *′-isNonzeroClosed)
       (1#| _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′ 1#′≉0#′) _⁻¹′
 
-  isField-AlgebraicExtensionBySqrt : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
-  isField-AlgebraicExtensionBySqrt =
+  isField-ExtensionBySqrt : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
+  isField-ExtensionBySqrt =
     record
       { 1#≉0# = 1#′≉0#′
       ; isCommutativeRing = isCommutativeRing′

@@ -1,10 +1,10 @@
-module FieldRational where
+module Algebra.Field.Rational where
 
 
-open import Relation.Binary.PropositionalEquality
-open import Data.Rational
+open import Relation.Binary.PropositionalEquality using (_≡_)
+open import Data.Rational using (0ℚ; 1ℚ; _+_; _*_; -_)
 open import Algebra.Core
-open import StructureField
+open import Algebra.Field
 
 
 -- ----------------------------------------------------------------

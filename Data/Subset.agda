@@ -1,4 +1,4 @@
-module Subset {a b} where
+module Data.Subset {a b} where
 
 open import Level using (Level; _⊔_; suc)
 open import Relation.Binary using (Rel)

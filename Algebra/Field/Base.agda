@@ -1,4 +1,4 @@
-module StructureField where
+module Algebra.Field.Base where
 
 
 open import Level using (_⊔_; suc; 0ℓ)
@@ -9,7 +9,7 @@ open import Relation.Nullary.Decidable
 open import Algebra.Core
 open import Algebra.Structures as Structures
 
-open import Subset
+open import Data.Subset
 
 
 -- ================================================================
