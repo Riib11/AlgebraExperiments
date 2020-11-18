@@ -17,7 +17,7 @@ open import FieldRational
 
 open import Data.Rational as Rat hiding (_+_; _*_)
 import Data.Integer as Int
-import Data.Nat as Nat
+open import Data.Nat as Nat using (ℕ; zero; suc)
 import Data.Nat.Coprimality as Coprimality
 import Data.Nat.Divisibility as Divisibility
 
@@ -42,8 +42,7 @@ import Data.Nat.Divisibility as Divisibility
 -- (though all but one of the paths from root to leaf have length less than ``n``).
 -- For a binary tree of height ``n``, the number of nodes in the tree
 -- is less than ``2^n``. So, the time complexity of ``fibonacci-rec``
--- is ``log[2^n]``.
---
+-- is ``O(log[2^n])``. We can show a slighter tighter bound, however.
 
 -- ----------------------------------------------------------------
 -- Fibonacci via Closed Formula over ℚ[sqrt[5]]
@@ -55,8 +54,6 @@ import Data.Nat.Divisibility as Divisibility
 -- Given constant-time addition and multiplication, this formula
 -- computes with the complexity of raising ``φ`` to the power ``n``,
 -- which via simply-recursive exponentiation is ``O(n)``.
--- This can be sped up to ``O(log[n])`` by using exponentiation via
--- repeated squaring.
 
 
 5ℚ : ℚ
@@ -96,29 +93,30 @@ module _ where
   ... | n′ , inj₁ n≡2n′ rewrite n≡2n′ = n′ , inj₂ refl
   ... | n′ , inj₂ n≡s2n′ rewrite n≡s2n′ | sym (+-suc n′ n′) = suc n′ , inj₁ refl
 
-  -- logarithmic exponentiation (via repeated squaring)
-  -- x ^² (2 * n) = (x ^² n) * (x ^² n)
+  -- for fun, this is exponentiation via repeated squaring;
+  -- using binary representations, this can slightly speed up exponentiation
+  -- x ^₂ (2 * n) = (x ^₂ n) * (x ^₂ n)
   {-# TERMINATING #-} -- since n′ < n
-  _^²_ : ℚ[sqrt[5]] → ℕ → ℚ[sqrt[5]]
-  x ^² 0 = 1#′
-  x ^² n@(suc _) with ⌊ n /2⌋-remainder
-  ... | n′ , inj₁ n≡2n′   = (x ^² n′) *′ (x ^² n′) 
-  ... | n′ , inj₂ n≡2n′+1 = ((x ^² n′) *′ (x ^² n′)) *′ x
+  _^₂_ : ℚ[sqrt[5]] → ℕ → ℚ[sqrt[5]]
+  x ^₂ 0 = 1#′
+  x ^₂ n@(suc _) with ⌊ n /2⌋-remainder
+  ... | n′ , inj₁ n≡2n′   = (x ^₂ n′) *′ (x ^₂ n′) 
+  ... | n′ , inj₂ n≡2n′+1 = ((x ^₂ n′) *′ (x ^₂ n′)) *′ x
 
   postulate
-    ^²-correct : ∀ x n → x ^ n ≡ x ^² n
+    ^₂-correct : ∀ x n → x ^ n ≡ x ^₂ n
 
   -- example: correct for ``2 ^ 10``
   #2′ : ℚ[sqrt[5]]
   #2′ = 1#′ +′ 1#′
-  _ : #2′ ^ 10 ≡ #2′ ^² 10
+  _ : #2′ ^ 10 ≡ #2′ ^₂ 10
   _ = refl
 
 
 
 -- the ``n``th fibonacci number is ``φ ^ n - (1 - φ) ^ n``
-fibonacci-extended : Nat.ℕ → ℚ[sqrt[5]]
-fibonacci-extended n = (φ ^² n) -′ ((1#′ -′ φ) ^² n) where
+fibonacci-extended : ℕ → ℚ[sqrt[5]]
+fibonacci-extended n = (φ ^ n) -′ ((1#′ -′ φ) ^ n) where
   open IsField isField-AlgebraicExtensionBySqrt
 
 
@@ -128,15 +126,15 @@ postulate
 
 
 -- closed formula for the ``n``th Fibonacci number
-fibonacci : Nat.ℕ → Nat.ℕ
+fibonacci : ℕ → ℕ
 fibonacci = Int.∣_∣ ∘ Rat.ℚ.numerator ∘ internal ∘ fibonacci-extended
 
 
 -- recursive formula for the ``n``th Fibonacci number
-fibonacci-rec : Nat.ℕ → Nat.ℕ
-fibonacci-rec Nat.zero = Nat.zero
-fibonacci-rec (Nat.suc Nat.zero) = Nat.suc Nat.zero
-fibonacci-rec (Nat.suc (Nat.suc n)) = fibonacci-rec (Nat.suc n) Nat.+ fibonacci-rec n
+fibonacci-rec : ℕ → ℕ
+fibonacci-rec 0 = 0
+fibonacci-rec (suc 0) = suc 0
+fibonacci-rec (suc (suc n)) = fibonacci-rec (suc n) Nat.+ fibonacci-rec n
 
 
 -- closed formula and recursive formula always yield same answer
