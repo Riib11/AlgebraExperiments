@@ -15,7 +15,7 @@ open import Subset
 open import StructureField
 open import FieldRational
 
-open import Data.Rational as Rat hiding (_+_; _*_)
+open import Data.Rational as Rat hiding (_+_; _*_; -_)
 import Data.Integer as Int
 open import Data.Nat as Nat using (ℕ; zero; suc)
 import Data.Nat.Coprimality as Coprimality
@@ -55,27 +55,31 @@ import Data.Nat.Divisibility as Divisibility
 -- computes with the complexity of raising ``φ`` to the power ``n``,
 -- which via simply-recursive exponentiation is ``O(n)``.
 
-
+-- 5 +sqrt[5] 0
 5ℚ : ℚ
 5ℚ = mkℚ (Int.+ 5) 0 coprime-5-1 where
   coprime-5-1 : Coprimality.Coprime 5 1
   coprime-5-1 = Divisibility.∣1⇒≡1 ∘ proj₂
 
+
 open import AlgebraicFieldExtension _≡_ 5ℚ
-open IsField-AlgebraicExtensionBySqrt 0ℚ 1ℚ Rat._+_ Rat._*_ -_ _⁻¹ isField-ℚ
+open IsField-AlgebraicExtensionBySqrt 0ℚ 1ℚ Rat._+_ Rat._*_ Rat.-_ FieldRational._⁻¹ isField-ℚ
 
 
 -- the rationals extended by ``sqrt[5]``
 ℚ[sqrt[5]] : Set
 ℚ[sqrt[5]] = AlgebraicFieldExtensionBySqrt
 
+_+sqrt[5]_ : ℚ → ℚ → ℚ[sqrt[5]]
+a +sqrt[5] b = a +sqrt[α] b
+
 
 -- extended constants
 sqrt[5] : ℚ[sqrt[5]]
-sqrt[5] = 0ℚ +sqrt[α] 1ℚ
+sqrt[5] = 0ℚ +sqrt[5] 1ℚ
 -- the golden ratio
 φ : ℚ[sqrt[5]]
-φ = ½ +sqrt[α] ½
+φ = ½ +sqrt[5] ½
 
 
 module _ where
@@ -127,7 +131,7 @@ postulate
 
 -- closed formula for the ``n``th Fibonacci number
 fibonacci : ℕ → ℕ
-fibonacci = Int.∣_∣ ∘ Rat.ℚ.numerator ∘ internal ∘ fibonacci-extended
+fibonacci = Int.∣_∣ ∘ ℚ.numerator ∘ internal ∘ fibonacci-extended
 
 
 -- recursive formula for the ``n``th Fibonacci number
