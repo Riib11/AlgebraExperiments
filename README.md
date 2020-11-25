@@ -1,40 +1,98 @@
 # README
 
-## Module Organization 
+## Module Organization
 
 ```
-ExtensionFibonacci.agda       # closed-form fibonacci implementation
+    Fibonacci/               # the nth Fibonacci number
+      Recursive.agda         # - recursive definition
+      Closed.agda            # - closed definition and correctness
 
-Algebra/
-	Field/
-		Base.agda              # formalization of mathematical field
-		Rational.agda          # instantiation of the rational field
-		Extension/BySqrt.agda  # algebraic extension by posited square root
+    Algebra/                 # algebraic structures
 
-Data/
-	Subset.agda                # data type of A-terms that satisfy A-predicate
+      Field/                 # - fields
+        Base.agda            #   - formalization of mathematical field
+        Rational.agda        #   - instantiation of the rational field
+        Exponentiation.agda  #   - natural exponentation over fields
+        Polynomial.agda      #   - polynomials over fields
+      Field.agda
+
+      Extension/             # - field extensions (FE)
+        Algebraic/           #   - algebraic field extensions (AFE)
+		  BySqrt.agda        #     - AFE by square root
+          BySqrt5.agda       #     - AFE of ℚ by sqrt[5]
+
+    Data/                    # general data structures
+      Subset.agda            # - predicated terms
 ```
 
-## Extension Fibonacci
 
-This module implements a function `fibonacci : (n : ℕ) → ℕ` which computes the `n`th Fibonacci number using the closed formula.
+## Fibonacci via Recursive Formula
 
+The Fibonacci sequence is a well-known sequence of natural numbers, and it is typically defined recursively as follows:
 
-### Fibonacci via Recursive Formula
+```
+    The 0th Fibonacci number is 0.
+    The 1st Fibonacci number is 1.
+    The (n+2)th Fibonacci number is the sum of the (n+1)th and nth Fibonacci numbers, where n ≥ 0.
+```
 
-A common implementation of this is the following recursive function:
+The module `Fibonacci.Recursive` implements a function `fibonacci-rec : ℕ → ℕ` that meets the specification above exactly. It is constructed as follows:
 
-	fibonacci-rec 0 = 0
-	fibonacci-rec 1 = 1
+```agda
+    fibonacci-rec : ℕ → ℕ
+	fibonacci-rec 0             = 0
+	fibonacci-rec 1             = 1
 	fibonacci-rec (suc (suc n)) = ficonacci-rec (suc n) + fibonacci-rec n
+```
 
-For the sake of simplicity, assume we are working with fixed-size numerical representations, so that addition and multiplication are constant-time. Each recursive call spawns 2 further calls, and the max call depth is `n`, so the resulting binary recursion-tree has height `n` (though all but one of the root-to-leaf-paths have length less than `n`). For a binary tree of height `n`, the number of nodes in the tree is less than `2^n`. So, the time complexity of `fibonacci-rec` is `O(log[2^n])`.
+## Fibonacci via Closed Formula over ℚ[sqrt[5]]
+
+There is in fact a closed formula for the nth Fibonacci number, which is the following:
+
+```
+    The nth Fibonacci number is (φ ^ n - (1 - φ) ^ n) / sqrt[5]
+```
+
+where `φ = (1/2)(1 + sqrt[5])` is the golden ratio.
+Just as before, we can formalize this specification in Agda straightforwardly:
+
+```agda
+    fibonacci-ext n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
+```
+
+Observe that the type signature is missing --- let us derive what it must be.
+For `fibonacci-rec`, we only needed addition, and so were safely working over just monoid of addition over `ℕ`, and so the signature `ℕ → ℕ` was perfectly safe.
+However, in `fibonacci-ext`, there are few new capabilities used.
+1. To use subtraction, we must have an addition group.
+2. To use exponentiation, we must have a multiplication monoid.
+3. To use division by nonzero elements, we must have a multiplication group over nonzero elements.
+
+(1.) and (2.) require that we have a (commutative) ring.
+Then (3.) requires further that we have a field.
+Since our result must eventually be reducible to a natural number,
+the field to use should be the rational number field, `ℚ`.
+Additionally since we are using `sqrt[5]` we must also extend `ℚ` with `sqrt[5]`, written `ℚ[sqrt[5]]`.
+Since `sqrt[5]` is a zero of the `ℚ`-polynomial `X^2 - 5` (i.e. is algebraic), this is an algebraic field extension, which is a field itself.
+
+So, we can type `fibonacci-ext` like so:
+
+```agda
+    fibonacci-ext : ℕ → ℚ[sqrt[5]]
+    fibonacci-ext n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
+```
+
+But how exactly is `ℚ[sqrt[5]]` defined in Agda?
+First we formalize fields in Agda
+(the Agda standard library only defines algebraic structures up to commutative rings and distributive lattices).
+Then we formalize algebraic field extensions by a the square root of a square-free number.
+
+## Fields
+
+<!-- TODO -->
+
+## Algebraic Field Extensions by Square Root of Square-Free Number
+
+<!-- TODO -->
 
 
-### Fibonacci via Closed Formula over ℚ[sqrt[5]]
-
-This module's implementation instead uses the closed formula
-
-	fibonacci-ext n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
-
-where `φ = (1/2)(1 + sqrt[5])` (the golden ratio). For the sake of simplicity, assume we are working with fixed-size numerical representations, so that addition, multiplication, and inversion are constant-time. Then this formula computes with the complexity of raising `φ` to the power `n`, which via recursive exponentiation involves `n` multiplications and so is `O(n)`.
+<!-- where `φ = (1/2)(1 + sqrt[5])` (the golden ratio). For the sake of simplicity, assume we are working with fixed-size numerical representations, so that addition, multiplication, and inversion are constant-time. Then this formula computes with the complexity of raising `φ` to the power `n`, which via recursive exponentiation involves `n` multiplications and so is `O(n)`. -->
