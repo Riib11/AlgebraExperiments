@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage[left=1in, right=1in, top=0.5in, bottom=0.5in]{geometry}
+\usepackage[left=1in, right=1in, top=1in, bottom=1in]{geometry}
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -8,10 +8,11 @@
 
 
 \begin{document}
+\pagenumbering{gobble}
 
 \section*{Fibonacci Sequence Closed Form}
 
-The Fibonacci sequence $F_n$ is defined as follows:
+The Fibonacci sequence $F_n$ is defined as follows.
 \begin{align*}
   F_0 &= 0, &
   F_1 &= 1, &
@@ -19,29 +20,31 @@ The Fibonacci sequence $F_n$ is defined as follows:
 \end{align*}
 
 \paragraph{Theorem.}
-The Fibonacci sequence has the following closed formula
-\[
-  F_n
+The Fibonacci sequence has closed closed formula, dubbed $h_n$, defined as
+\begin{align*}
+  h_n = \frac{1}{\sqrt{5}} \left(\phi_+^{n+1} - \phi_-^{n+1}\right)
   =
-  \frac{1}{\sqrt{5}} \left(\phi_+^i - \phi_-^i\right).
-\]
+  \frac{1}{\sqrt{5}} \left(\phi_+^n - \phi_-^n\right).
+\end{align*}
 where
 $\phi_+ = \frac{1 + \sqrt{5}}{2}$ and
 $\phi_- = \frac{1 + \sqrt{5}}{2}$.
-% where
-% \begin{align*}
-%   \phi_+ &= \frac{1 + \sqrt{5}}{2}, &
-%   \phi_- &= \frac{1 + \sqrt{5}}{2}.
-% \end{align*}
+where
+\begin{align*}
+  \phi_+ &= \frac{1 + \sqrt{5}}{2}, &
+  \phi_- &= \frac{1 + \sqrt{5}}{2}.
+\end{align*}
 
 \begin{proof}
-Consider the infinite $x$-power series $f$ defined as
-\[
-  f = \sum_{i=0}^\infty F_{i+1} x^i,
-\]
+Consider the infinite $x$-power series
+\begin{align*}
+\tag{\texttt{f\textsubscript{0}}}
+  f = \sum_{i=0}^\infty F_{i+1} x^i
+\end{align*}
 and suppose $0 < x < 1/2$ (e.g. $1/4$).
 Then
 \begin{align*}
+\tag{\texttt{g\textsubscript{1}}}
   (1 - x - x^2) f
 &=
   \sum_{i=0}^\infty (1 - x - x^2) F_{i+1} x^i
@@ -52,12 +55,14 @@ Then
   (F_2 x^1 - F_2 x^2 - F_2 x^3) +
   (F_3 x^2 - F_3 x^3 - F_3 x^4) + \cdots
 \\&=
+\tag{\texttt{g\textsubscript{2}}}
   F_1 x^0 +
   (F_2 - F_1) x^1 +
   (F_3 - F_1 - F_2) x^2 +
   (F_4 - F_2 - F_3) x^3 +
   \cdots
 \\&=
+\tag{\texttt{g\textsubscript{3}}}
   1 x^0 +
   0 x^1 +
   ((F_1 + F_2) - F_1 - F_2) x^2 +
@@ -70,12 +75,15 @@ Then
   0 x^3 +
   \cdots
 \\&=
+\tag{\texttt{g\textsubscript{4}}}
   1
 \\\implies
   f
 &=
+\tag{\texttt{f\textsubscript{1}}}
   \frac{1}{1 - x - x^2}
 \\&=
+\tag{\texttt{f\textsubscript{2}}}
   \frac{1}{\sqrt{5}} \left(
     \frac{\phi_+}{1 - \phi_+} -
     \frac{\phi_-}{1 - \phi_-}
@@ -85,40 +93,44 @@ Since for $|x| < 1/2$, $\frac{1}{(1 - a x)} = \sum_{i=0}^\infty (a x)^n$,
 we have
 \begin{align*}
   f
-&=
+=
   \frac{1}{\sqrt{5}} \left(
     \frac{\phi_+}{1 - \phi_+} -
     \frac{\phi_-}{1 - \phi_-}
   \right)
-\\&=
+&=
+\tag{\texttt{f\textsubscript{3}}}
   \frac{1}{\sqrt{5}} \left(
     \left(\phi_+ \sum_{i=0}^\infty \phi_+^i x^i\right) -
     \left(\phi_-\sum_{i=0}^\infty \phi_-^i x^i\right)
   \right)
 \\&=
-  \sum_{i=0}^\infty \left(
-    \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right) x^i
-  \right).
-\end{align*}
-Then finally,
-\begin{align*}
-  f
-=
-  \sum_{i=0}^\infty F_{i+1} x^i
-&=
+\tag{\texttt{f\textsubscript{4}}}
   \sum_{i=0}^\infty \left(
     \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right) x^i
   \right)
 \\\implies
-  F_{i+1}
+  \sum_{i=0}^\infty F_{i+1} x^i
 &=
-  \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right)
+% \tag{\texttt{f\textsubscript{0 \approx f_4}}}
+\tag{$\texttt{f\textsubscript{0}} \approx \texttt{f\textsubscript{4}}$}
+  \sum_{i=0}^\infty \left(
+    \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right) x^i
+  \right)
 \\\implies
-  F_i
+\tag{$F_{n+1} \equiv h_{n+1}$}
+\forall n,
+  F_{n+1}
 &=
-  \frac{1}{\sqrt{5}} \left(\phi_+^i - \phi_-^i\right).
+  \frac{1}{\sqrt{5}} \left(\phi_+^{n+1} - \phi_-^{n+1}\right)
+=
+  h_{n+1}
+\\\implies
+\tag{$F_{n} \equiv h_{n}$}
+\forall n,
+  F_n
+&=
+  h_n.
 \end{align*}
 \end{proof}
-
-
 \end{document}
