@@ -240,3 +240,5 @@ isField-ExtensionE = _ -- omitted proofs of field properties
     - [x] prove `F n ≡ h n`
     - [x] prove `fibonacci-extendedended n ≡ F′ n`
     - [x] prove main theorem: `fibonacci-extendedracted n ≡ fibonacci-recursiveursive n`
+- Miscellaneous
+  - [ ] fill in postulates used in places where I haven't gotten around to the full proofs yet
