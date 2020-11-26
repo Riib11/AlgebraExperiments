@@ -132,7 +132,7 @@ module Correct where
   ¼# : ℚ[sqrt[5]]
   ¼# = ¼ℚ +sqrt[5] 0ℚ
 
-  open import Algebra.Field.PolynomialNew field-ExtensionBySqrt ¼#
+  open import Algebra.Field.Polynomial field-ExtensionBySqrt ¼#
 
   -- nth Fibonacci number (via recursive function) in ℚ[Sqrt[5]]
   F : ℕ → A
