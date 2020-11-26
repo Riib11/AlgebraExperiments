@@ -3,7 +3,8 @@ module Fibonacci.Closed where
 open import Level using (0ℓ; _⊔_) 
 open import Function
 open import Relation.Binary
-open import Relation.Binary.PropositionalEquality hiding (Extensionality)
+open import Relation.Binary.PropositionalEquality as PropEquality
+  hiding (Extensionality)
 open import Axiom.Extensionality.Propositional
 open import Relation.Nullary
 open import Data.Product
@@ -68,7 +69,7 @@ open import Fibonacci.Recursive renaming (fibonacci to fibonacci-recursive)
 
 
 open import Algebra.Field.Extension.BySqrt5
-open import Algebra.Field.Exponentiation field-ExtensionBySqrt
+open import Algebra.Field.Exponentiation field-E
 
 
 -- the ``n``th fibonacci number is
@@ -96,20 +97,10 @@ _ : fibonacci-extended 5 ≡ 5#
 _ = refl
 
 
--- ``fibonacci-extended`` yields an entirely internal, integral, natural result
-postulate
-  fibonacci-extended-internal : ∀ {n} →
-    external (fibonacci-extended n) ≡ 0ℚ
-  fibonacci-extended-integral : ∀ {n} →
-    ℚ.denominator (internal (fibonacci-extended n)) ≡ pos 0
-  fibonacci-extended-natural : ∀ {n} → ∃[ x ]
-    (ℚ.numerator (internal (fibonacci-extended n)) ≡ pos x)
-    
-
 -- closed formula for the ``n``th Fibonacci number,
 -- since ``fibonacci-extended`` yields an entirely internal, natural result
-fibonacci : ℕ → ℕ
-fibonacci = Int.∣_∣ ∘ ℚ.numerator ∘ internal ∘ fibonacci-extended
+fibonacci-extracted : ℕ → ℕ
+fibonacci-extracted = Int.∣_∣ ∘ ℚ.numerator ∘ internal ∘ fibonacci-extended
 
 
 module Correct where
@@ -132,13 +123,81 @@ module Correct where
   ¼# : ℚ[sqrt[5]]
   ¼# = ¼ℚ +sqrt[5] 0ℚ
 
-  open import Algebra.Field.Polynomial field-ExtensionBySqrt ¼#
+  open import Algebra.Field.Polynomial field-E ¼#
 
-  -- nth Fibonacci number (via recursive function) in ℚ[Sqrt[5]]
+  -- nth Fibonacci number (via recursive function) embedded in ℚ[Sqrt[5]]
+  F′ : ℕ → A
+  F′ n = (mkℚ (pos (fibonacci-recursive n)) 0 coprime-fibₙ-1) +sqrt[5] 0ℚ where
+    coprime-fibₙ-1 = Coprimality.sym (Coprimality.1-coprimeTo (fibonacci-recursive n))
+
+  -- nth Fibonacci number (via recursive function) over ℚ[Sqrt[5]]
   F : ℕ → A
   F 0 = 0#
   F 1 = 1#
   F ((n +1) +1) = F (n +1) + F n
+
+  -- these two formulations are equivalent, but for typechecking's sake it's
+  -- much more convenient to use the second one.
+
+  F′≡F : ∀ {n} → F′ n ≡ F n
+  F′≡F {zero} = refl
+  F′≡F {zero +1} = refl
+  F′≡F {(n +1) +1} =
+    begin
+      F′ ((n +1) +1)
+    ≡⟨ refl ⟩
+      (mkℚ (pos (fibonacci-recursive ((n +1) +1))) 0 _) +sqrt[5] 0ℚ
+    ≡⟨ refl ⟩
+    -- (+(a + b))/1 + sqrt[5] 0
+      (mkℚ (pos (fibonacci-recursive (n +1) Nat.+
+                 fibonacci-recursive  n   ))
+            0 _)
+       +sqrt[5] 0ℚ
+    ≡⟨ cong (λ a → a +sqrt[5] 0ℚ)
+            (+ℕ→+ℤ (fibonacci-recursive (n +1)) (fibonacci-recursive n)) ⟩
+    -- (((+a) + (+b))/1) + sqrt[5] 0
+      (mkℚ (pos (fibonacci-recursive (n +1)) Int.+
+           (pos (fibonacci-recursive n    )))
+           0 (Coprimality.sym (1-coprimeTo (fibonacci-recursive (n +1) Nat.+ fibonacci-recursive n))))
+      +sqrt[5] 0ℚ
+    ≡⟨ cong (λ a → a +sqrt[5] 0ℚ)
+            (+ℤ→+ℚ (fibonacci-recursive (n +1)) (fibonacci-recursive n)) ⟩
+    -- ((+a)/1 + (+b)/1) + sqrt[5] 0
+      ((mkℚ (pos (fibonacci-recursive (n +1))) 0 coprimeTo-1) Rat.+
+       (mkℚ (pos (fibonacci-recursive  n    )) 0 coprimeTo-1))
+      +sqrt[5] 0ℚ
+    ≡⟨ +ℚ→+E (fibonacci-recursive (n +1)) (fibonacci-recursive n) ⟩
+    -- (((+a)/1) + sqrt[5] 0) + (((+b)/1) + sqrt[5] 0)
+      (((mkℚ (pos (fibonacci-recursive (n +1))) 0 coprimeTo-1) +sqrt[5] 0ℚ) +
+       ((mkℚ (pos (fibonacci-recursive  n    )) 0 coprimeTo-1) +sqrt[5] 0ℚ))
+    ≡⟨ cong (λ a → a + (mkℚ (pos (fibonacci-recursive n)) 0 coprimeTo-1 +sqrt[5] 0ℚ))
+            (F′≡F {n +1}) ⟩
+      F (n +1) +
+      ((mkℚ (pos (fibonacci-recursive  n    )) 0 coprimeTo-1) +sqrt[5] 0ℚ)
+    ≡⟨ cong (λ a → F (n +1) + a)
+            (F′≡F {n}) ⟩
+      F (n +1) + F n
+    ∎
+    where
+      open ≡-Reasoning
+      open Coprimality
+      import Data.Nat.Properties as NatProperties
+
+      coprimeTo-1 : ∀ {a} → Coprime a 1
+      coprimeTo-1 {a} = Coprimality.sym (1-coprimeTo a)
+
+      +ℕ→+ℤ : ∀ a b → mkℚ (pos (a Nat.+ b))   0 coprimeTo-1
+                    ≡ mkℚ (pos a Int.+ pos b) 0 coprimeTo-1
+      +ℕ→+ℤ a b = refl
+
+      postulate
+        +ℤ→+ℚ : ∀ a b → mkℚ (pos a Int.+ pos b) 0 coprimeTo-1
+                      ≡ mkℚ (pos a) 0 coprimeTo-1 Rat.+ mkℚ (pos b) 0 coprimeTo-1
+        +ℚ→+E : ∀ a b →  (mkℚ (pos a) 0 coprimeTo-1 Rat.+ mkℚ (pos b) 0 coprimeTo-1) +sqrt[5] 0ℚ
+                      ≡ ((mkℚ (pos a) 0 coprimeTo-1) +sqrt[5] 0ℚ) + ((mkℚ (pos b) 0 coprimeTo-1) +sqrt[5] 0ℚ)
+        
+      
+
 
   -- f = ∑ F (i+1) * 𝑋ⁱ
   f₀ : PowerSeries
@@ -183,57 +242,57 @@ module Correct where
 
   -- this proof takes a few minutes to typecheck, so it's convenient to
   -- just postulate it when neither actively working on it nor its dependencies
-  postulate
-    g₀≈ₛg₁ : g₀ ≈ₛ g₁
-  -- g₀≈ₛg₁ : g₀ ≈ₛ g₁
-  -- g₀≈ₛg₁ 0 rewrite n-0≡0 0# = refl
-  -- g₀≈ₛg₁ 1 rewrite n+0≡0 1# = refl
-  -- g₀≈ₛg₁ (1+ (i +1)) =
-  --   begin
+  -- postulate
+  --   g₀≈ₛg₁ : g₀ ≈ₛ g₁
+  g₀≈ₛg₁ : g₀ ≈ₛ g₁
+  g₀≈ₛg₁ 0 rewrite n-0≡0 0# = refl
+  g₀≈ₛg₁ 1 rewrite n+0≡0 1# = refl
+  g₀≈ₛg₁ (1+ (i +1)) =
+    begin
 
-  --     ((F₁ + F₀) + F₁) - ((F₁ + F₀) + F₁)
+      ((F₁ + F₀) + F₁) - ((F₁ + F₀) + F₁)
 
-  --   ≡⟨ n-n≡0 ((F₁ + F₀) + F₁) ⟩
+    ≡⟨ n-n≡0 ((F₁ + F₀) + F₁) ⟩
 
-  --     0#
+      0#
 
-  --   ≡⟨ 0≡-n+n (F₁ + (F₁ + F₀)) ⟩
+    ≡⟨ 0≡-n+n (F₁ + (F₁ + F₀)) ⟩
 
-  --     ((- (F₁ + (F₁ + F₀))) + (F₁ + (F₁ + F₀)))
+      ((- (F₁ + (F₁ + F₀))) + (F₁ + (F₁ + F₀)))
 
-  --   ≡⟨ cong (λ a → (- (F₁ + (F₁ + F₀))) + (F₁ + a)) (+-comm F₁ F₀) ⟩
+    ≡⟨ cong (λ a → (- (F₁ + (F₁ + F₀))) + (F₁ + a)) (+-comm F₁ F₀) ⟩
 
-  --     ((- (F₁ + (F₁ + F₀))) + (F₁ + (F₀ + F₁)))
+      ((- (F₁ + (F₁ + F₀))) + (F₁ + (F₀ + F₁)))
 
-  --   ≡⟨ cong (λ a → (- (F₁ + (F₁ + F₀))) + a)
+    ≡⟨ cong (λ a → (- (F₁ + (F₁ + F₀))) + a)
 
-  --     (sym (+-assoc F₁ F₀ F₁)) ⟩ ((- (F₁ + (F₁ + F₀))) + ((F₁ + F₀) + F₁))
+      (sym (+-assoc F₁ F₀ F₁)) ⟩ ((- (F₁ + (F₁ + F₀))) + ((F₁ + F₀) + F₁))
       
-  --   ≡⟨ cong (λ a → (a + ((F₁ + F₀) + F₁))) (-n≡-1*n (F₁ + (F₁ + F₀))) ⟩
+    ≡⟨ cong (λ a → (a + ((F₁ + F₀) + F₁))) (-n≡-1*n (F₁ + (F₁ + F₀))) ⟩
 
-  --     ((-1# * (F₁ + (F₁ + F₀))) + ((F₁ + F₀) + F₁))
+      ((-1# * (F₁ + (F₁ + F₀))) + ((F₁ + F₀) + F₁))
       
-  --   ≡⟨ cong (λ a → ((-1# * (F₁ + (F₁ + F₀))) + a)) (n≡1*n ((F₁ + F₀) + F₁)) ⟩
+    ≡⟨ cong (λ a → ((-1# * (F₁ + (F₁ + F₀))) + a)) (n≡1*n ((F₁ + F₀) + F₁)) ⟩
 
-  --     ((-1# * (F₁ + (F₁ + F₀))) + (1# *′ ((F₁ + F₀) + F₁)))
+      ((-1# * (F₁ + (F₁ + F₀))) + (1# * ((F₁ + F₀) + F₁)))
       
-  --   ≡⟨ cong (λ a → a + (1# *′ ((F₁ + F₀) + F₁))) (*-distribˡ -1# F₁ (F₁ + F₀)) ⟩
+    ≡⟨ cong (λ a → a + (1# * ((F₁ + F₀) + F₁))) (*-distribˡ -1# F₁ (F₁ + F₀)) ⟩
 
-  --     (((-1# *′ F₁) + (-1# *′ (F₁ + F₀))) +  (1# *′ ((F₁ + F₀) + F₁)))
+      (((-1# * F₁) + (-1# * (F₁ + F₀))) +  (1# * ((F₁ + F₀) + F₁)))
 
-  --   ≡⟨ +-assoc (-1# *′ F₁) (-1# *′ (F₁ + F₀)) (1# *′ ((F₁ + F₀) + F₁)) ⟩
+    ≡⟨ +-assoc (-1# * F₁) (-1# * (F₁ + F₀)) (1# * ((F₁ + F₀) + F₁)) ⟩
 
-  --     ( (-1# *′ F₁) + ((-1# *′ (F₁ + F₀))  +  (1# *′ ((F₁ + F₀) + F₁))))
+      ( (-1# * F₁) + ((-1# * (F₁ + F₀))  +  (1# * ((F₁ + F₀) + F₁))))
 
-  --   ≡⟨ cong (λ a → ((-1# *′ F₁) + ((-1# *′ (F₁ + F₀)) + a))) (n≡n+0 (1# *′ ((F₁ +′ F₀) +′ F₁))) ⟩
+    ≡⟨ cong (λ a → ((-1# * F₁) + ((-1# * (F₁ + F₀)) + a))) (n≡n+0 (1# * ((F₁ + F₀) + F₁))) ⟩
 
-  --     ( (-1# *′ F₁) + ((-1# *′ (F₁ + F₀))  + ((1# *′ ((F₁ + F₀) + F₁)) + 0#)))
+      ( (-1# * F₁) + ((-1# * (F₁ + F₀))  + ((1# * ((F₁ + F₀) + F₁)) + 0#)))
 
-  --   ∎
-  --   where
-  --     F₀ = F i
-  --     F₁ = F (i +1)
-  --     open ≡-Reasoning
+    ∎
+    where
+      F₀ = F i
+      F₁ = F (i +1)
+      open ≡-Reasoning
 
   -- g₂ = F₀*𝑋⁰ + F₁*𝑋¹ + ∑[i≥2] (Fᵢ₊₁ - Fᵢ - Fᵢ₋₁)*𝑋ⁱ
   g₂ : PowerSeries
@@ -261,7 +320,7 @@ module Correct where
   postulate
     g₃⟶∞g₄ : g₃ ⟶∞ g₄
 
-  -- f₁ = (- 𝑋² - 𝑋 + 1)⁻¹
+  -- f₁ = (1 - 𝑋 - 𝑋²)⁻¹
   f₁ : Polynomial
   f₁ = elem ((((- 1#) *𝑋^ 2 +ₚ ((- 1#) *𝑋^ 1 +ₚ (1# *𝑋^ 0 +ₚ 0ₚ))) # p) ⁻¹ₚ) where
     postulate
@@ -327,3 +386,21 @@ module Correct where
   Fₙ≡hₙ {n +1} = Fₙ₊₁≡hₙ₊₁
 
   
+  fibonacci-extended≡F′ : ∀ {n} → fibonacci-extended n ≡ F′ n
+  fibonacci-extended≡F′ {n} =
+    begin                 fibonacci-extended n
+    ≡⟨ sym (Fₙ≡hₙ {n}) ⟩  F n
+    ≡⟨ sym (F′≡F {n}) ⟩   F′ n
+    ∎
+    where open ≡-Reasoning
+
+  -- main theorem
+  fibonacci-extracted-correct : ∀ {n} →
+    fibonacci-extracted n ≡ fibonacci-recursive n
+  fibonacci-extracted-correct {n} =
+    begin                                             fibonacci-extracted n
+    ≡⟨⟩                                               Int.∣ ℚ.numerator (internal (fibonacci-extended n)) ∣
+    ≡⟨ cong (λ a → Int.∣ ℚ.numerator (internal a) ∣)
+      (fibonacci-extended≡F′ {n}) ⟩                   fibonacci-recursive n
+    ∎
+    where open ≡-Reasoning

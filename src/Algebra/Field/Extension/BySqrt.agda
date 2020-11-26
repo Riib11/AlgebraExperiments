@@ -17,7 +17,6 @@ open import Data.Empty
 open import Algebra.Core
 open import Algebra.Structures
 open import Algebra.Field
-open FieldModule using (IsField)
 
 open import Data.Subset
 
@@ -32,15 +31,15 @@ open import Data.Subset
 
 
 -- extend field on ``A`` with ``sqrt[α]``
-record BySqrt : Set a where
+record E : Set a where
   constructor _+sqrt[α]_
   field
     internal : A
     external : A
 
-open BySqrt public
+open E public
 
-module IsField-ExtensionBySqrt
+module IsField-E
   (0# 1# : A)
   (_+_ _*_ : Op₂ A)
   (-_ : Op₁ A) (_⁻¹ : Op₁ (FieldModule.A≉0# _≈_ 0#))
@@ -56,54 +55,54 @@ module IsField-ExtensionBySqrt
   -- extended versions of ``IsField`` fields
 
   infix 4 _≈′_
-  _≈′_ : Rel BySqrt ℓ
+  _≈′_ : Rel E ℓ
   (a +sqrt[α] b) ≈′ (c +sqrt[α] d) = (a ≈ c) × (b ≈ d)
 
-  _≉′_ : Rel BySqrt ℓ
+  _≉′_ : Rel E ℓ
   x ≉′ y = ¬ (x ≈′ y)
 
-  0#′ : BySqrt
+  0#′ : E
   0#′ = 0# +sqrt[α] 0#
 
-  _≉′0#′ : Pred BySqrt ℓ
+  _≉′0#′ : Pred E ℓ
   _≉′0#′ = (_≉′ 0#′)
 
-  1#′ : BySqrt
+  1#′ : E
   1#′ = 1# +sqrt[α] 0#
 
-  -1#′ : BySqrt
+  -1#′ : E
   -1#′ = -1# +sqrt[α] 0#
 
-  sqrt[α] : BySqrt
+  sqrt[α] : E
   sqrt[α] = 0# +sqrt[α] 1#
                     
-  _+′_ : Op₂ BySqrt
+  _+′_ : Op₂ E
   (a +sqrt[α] b) +′ (c +sqrt[α] d) = (a + c) +sqrt[α] (b + d) 
                                                            
   -- extended multiplication that accounts for combined ``sqrt[α]`` terms
-  _*′_ : Op₂ BySqrt
+  _*′_ : Op₂ E
   (a +sqrt[α] b) *′ (c +sqrt[α] d) = ((a * c) + (α * (b * d))) +sqrt[α] ((a * d) + (b * c))
                                                                                         
-  -′_  : Op₁ BySqrt
+  -′_  : Op₁ E
   -′ x = -1#′ *′ x
 
-  _-′_ : Op₂ BySqrt
+  _-′_ : Op₂ E
   x -′ y = x +′ (-′ y)
 
     
   postulate
     isCommutativeRing′ : IsCommutativeRing _≈′_ _+′_ _*′_ -′_ 0#′ 1#′
 
-  BySqrt≉0#′ : Set (a ⊔ ℓ)
-  BySqrt≉0#′ = Subset {a} {ℓ} BySqrt (_≉′ 0#′)
+  E≉0#′ : Set (a ⊔ ℓ)
+  E≉0#′ = Subset {a} {ℓ} E (_≉′ 0#′)
 
-  _≈′|_ : Rel BySqrt≉0#′ ℓ
+  _≈′|_ : Rel E≉0#′ ℓ
   _≈′|_ = Rel⌈ _≈′_ ⌉
 
-  _≉0#′ : BySqrt → Set ℓ
+  _≉0#′ : E → Set ℓ
   _≉0#′ = _≉′ 0#′
 
-  _²′ : Op₁ BySqrt
+  _²′ : Op₁ E
   a ²′ = a *′ a
 
   postulate
@@ -114,11 +113,11 @@ module IsField-ExtensionBySqrt
   isEquivalence-≈′ = IsCommutativeRing.isEquivalence isCommutativeRing′ where
     open IsCommutativeRing isCommutativeRing
 
-  module M where
+  module A-Properties where
     open IsCommutativeRing isCommutativeRing public
       using
         ( *-isMagma ; zeroˡ ; zeroʳ ; *-identityˡ ; *-identityʳ ; *-assoc
-        ; +-isMagma ; +-identityˡ
+        ; +-isMagma ; +-identityˡ ; +-identityʳ
         ; isRing )
       renaming ()
     open IsMagma *-isMagma public
@@ -130,18 +129,18 @@ module IsField-ExtensionBySqrt
 
   module ≈-Reasoning where
     open import Relation.Binary.Reasoning.Base.Single _≈_
-      (IsEquivalence.refl M.isEquivalence)
-      (IsEquivalence.trans M.isEquivalence)
+      (IsEquivalence.refl A-Properties.isEquivalence)
+      (IsEquivalence.trans A-Properties.isEquivalence)
       public
   
 
-  module M′ where
+  module E-Properties where
     open IsCommutativeRing isCommutativeRing′ public
     
   module ≈′-Reasoning where
     open import Relation.Binary.Reasoning.Base.Single _≈′_
-      (IsEquivalence.refl M′.isEquivalence)
-      (IsEquivalence.trans M′.isEquivalence)
+      (IsEquivalence.refl E-Properties.isEquivalence)
+      (IsEquivalence.trans E-Properties.isEquivalence)
       public
 
   
@@ -149,29 +148,29 @@ module IsField-ExtensionBySqrt
   sqrt[α]²≈α =
     begin
       (sqrt[α] ²′)
-    ∼⟨ M′.refl ⟩
+    ∼⟨ E-Properties.refl ⟩
       (sqrt[α] *′ sqrt[α])
-    ∼⟨ M′.refl ⟩
+    ∼⟨ E-Properties.refl ⟩
       ( ((0# * 0#) + (α * (1# * 1#))) +sqrt[α] ((0# * 1#) + (1# * 0#)) )
-    ∼⟨ M.+-cong (M.zeroˡ 0#) M.refl , M.refl ⟩
+    ∼⟨ A-Properties.+-cong (A-Properties.zeroˡ 0#) A-Properties.refl , A-Properties.refl ⟩
       ( (0# + (α * (1# * 1#))) +sqrt[α] ((0# * 1#) + (1# * 0#)) )
-    ∼⟨ (M.+-cong M.refl (M.*-cong M.refl (M.*-identityˡ 1#))) , M.refl ⟩
+    ∼⟨ (A-Properties.+-cong A-Properties.refl (A-Properties.*-cong A-Properties.refl (A-Properties.*-identityˡ 1#))) , A-Properties.refl ⟩
       ( (0# + (α * 1#)) +sqrt[α] ((0# * 1#) + (1# * 0#)) )
-    ∼⟨ M.+-identityˡ (α * 1#) , M.refl ⟩
+    ∼⟨ A-Properties.+-identityˡ (α * 1#) , A-Properties.refl ⟩
       ( (α * 1#) +sqrt[α] ((0# * 1#) + (1# * 0#)) )
-    ∼⟨ M.*-identityʳ α , M.refl ⟩
+    ∼⟨ A-Properties.*-identityʳ α , A-Properties.refl ⟩
       ( α +sqrt[α] ((0# * 1#) + (1# * 0#)) )
-    ∼⟨ M.refl , (M.+-cong (M.zeroˡ 1#) M.refl) ⟩
+    ∼⟨ A-Properties.refl , (A-Properties.+-cong (A-Properties.zeroˡ 1#) A-Properties.refl) ⟩
       ( α +sqrt[α] (0# + (1# * 0#)) )
-    ∼⟨ M.refl , (M.+-cong M.refl (M.zeroʳ 1#)) ⟩
+    ∼⟨ A-Properties.refl , (A-Properties.+-cong A-Properties.refl (A-Properties.zeroʳ 1#)) ⟩
       ( α +sqrt[α] (0# + 0#) )
-    ∼⟨ M.refl , (M.+-identityˡ 0#) ⟩
+    ∼⟨ A-Properties.refl , (A-Properties.+-identityˡ 0#) ⟩
       (α +sqrt[α] 0#)
     ∎
     where
       open import Relation.Binary.Reasoning.Base.Single _≈′_
-        (IsEquivalence.refl M′.isEquivalence)
-        (IsEquivalence.trans M′.isEquivalence)
+        (IsEquivalence.refl E-Properties.isEquivalence)
+        (IsEquivalence.trans E-Properties.isEquivalence)
 
   ¬x²≈αy|² : ∀ {x} {y| : A≉0#} → ¬ ((x * x) ≈ (α * (elem y| * elem y|)))
   ¬x²≈αy|² {x} y|@{y # py} H = ⊥-elim (α-squarefree ((x ÷ (y # py)) , ⋯≈α)) where
@@ -179,11 +178,11 @@ module IsField-ExtensionBySqrt
     ⋯≈α : ((x ÷ (y # _)) * (x ÷ (y # _))) ≈ α
     ⋯≈α =
       begin                         ((x ÷ (y # _))  * (x ÷ (y # _)))
-      ∼⟨ M.sym x*y÷z*w≈x÷z*y÷w ⟩    ((x * x)        ÷ ((y * y) # _))
-      ∼⟨ M.*-cong H M.refl ⟩        ((α *  (y * y)) ÷ ((y * y) # _))
-      ∼⟨ M.*-assoc _ _ _ ⟩          ( α * ((y * y)  ÷ ((y * y) # x|²≉0# {y|})))
-      ∼⟨ M.*-cong M.refl x*x⁻¹≈1# ⟩ (α * 1#)
-      ∼⟨ M.*-identityʳ α ⟩          α
+      ∼⟨ A-Properties.sym x*y÷z*w≈x÷z*y÷w ⟩    ((x * x)        ÷ ((y * y) # _))
+      ∼⟨ A-Properties.*-cong H A-Properties.refl ⟩        ((α *  (y * y)) ÷ ((y * y) # _))
+      ∼⟨ A-Properties.*-assoc _ _ _ ⟩          ( α * ((y * y)  ÷ ((y * y) # x|²≉0# {y|})))
+      ∼⟨ A-Properties.*-cong A-Properties.refl x*x⁻¹≈1# ⟩ (α * 1#)
+      ∼⟨ A-Properties.*-identityʳ α ⟩          α
       ∎
 
   ¬x|²≈αy|² : ∀ {(x # _) (y # _) : A≉0#} → ¬ ((x ²) ≈ (α * (y ²)))
@@ -192,14 +191,14 @@ module IsField-ExtensionBySqrt
     ⋯≈α : ((x ÷ (y # _)) * (x ÷ (y # _))) ≈ α
     ⋯≈α =
       begin                         ((x ÷ (y # _))  * (x ÷ (y # _)))
-      ∼⟨ M.sym x*y÷z*w≈x÷z*y÷w ⟩    ((x * x)        ÷ ((y * y) # _))
-      ∼⟨ M.*-cong H M.refl ⟩        ((α *  (y * y)) ÷ ((y * y) # _))
-      ∼⟨ M.*-assoc _ _ _ ⟩          ( α * ((y * y)  ÷ ((y * y) # x|²≉0# {y|})))
-      ∼⟨ M.*-cong M.refl x*x⁻¹≈1# ⟩ (α * 1#)
-      ∼⟨ M.*-identityʳ α ⟩          α
+      ∼⟨ A-Properties.sym x*y÷z*w≈x÷z*y÷w ⟩    ((x * x)        ÷ ((y * y) # _))
+      ∼⟨ A-Properties.*-cong H A-Properties.refl ⟩        ((α *  (y * y)) ÷ ((y * y) # _))
+      ∼⟨ A-Properties.*-assoc _ _ _ ⟩          ( α * ((y * y)  ÷ ((y * y) # x|²≉0# {y|})))
+      ∼⟨ A-Properties.*-cong A-Properties.refl x*x⁻¹≈1# ⟩ (α * 1#)
+      ∼⟨ A-Properties.*-identityʳ α ⟩          α
       ∎
 
-  _⁻¹′  : Op₁ BySqrt≉0#′
+  _⁻¹′  : Op₁ E≉0#′
   (a@(x +sqrt[α] y) # pa) ⁻¹′ = a⁻¹ # a⁻¹≉0#′ where
   
     d : A
@@ -209,7 +208,7 @@ module IsField-ExtensionBySqrt
     d| : A≉0#
     d| = d # d≉0#
 
-    a⁻¹ : BySqrt
+    a⁻¹ : E
     a⁻¹ = (x ÷ d|) +sqrt[α] ((- y) ÷ d|)
 
     postulate
@@ -220,25 +219,25 @@ module IsField-ExtensionBySqrt
     1#′≉0#′ : 1#′ ≉′ 0#′
     *′-isNonzeroClosed : IsClosed₂ _≉0#′ _*′_
 
-  1#′| : BySqrt≉0#′
+  1#′| : E≉0#′
   1#′| = 1#′ # 1#′≉0#′
 
-  _*′|_ : Op₂ BySqrt≉0#′
+  _*′|_ : Op₂ E≉0#′
   ((x +sqrt[α] y) # px) *′| ((z +sqrt[α] w) # py) = ((x +sqrt[α] y) *′ (z +sqrt[α] w)) # pxyzw
     where
       postulate
         pxyzw : ((x +sqrt[α] y) *′ (z +sqrt[α] w)) ≉′ 0#′
 
 
-  _÷′_ : BySqrt → BySqrt≉0#′ → BySqrt
+  _÷′_ : E → E≉0#′ → E
   a ÷′ b| = a *′ elem (b| ⁻¹′)
 
 
   postulate
     *′-isAbelianGroup : IsAbelianGroup _≈′|_ _*′|_ 1#′| _⁻¹′
 
-  isField-ExtensionBySqrt : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
-  isField-ExtensionBySqrt =
+  isField-E : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
+  isField-E =
     record
       { 1#≉0# = 1#′≉0#′
       ; isCommutativeRing = isCommutativeRing′
@@ -247,10 +246,10 @@ module IsField-ExtensionBySqrt
       }
 
   
-  field-ExtensionBySqrt : Field a ℓ
-  field-ExtensionBySqrt =
+  field-E : Field a ℓ
+  field-E =
     record
-      { Carrier = BySqrt
+      { Carrier = E
       ; _≈_ = _≈′_
       ; 0# = 0#′
       ; 1# = 1#′
@@ -258,5 +257,5 @@ module IsField-ExtensionBySqrt
       ; _*_ = _*′_
       ; -_ = -′_
       ; _⁻¹ = _⁻¹′
-      ; isField = isField-ExtensionBySqrt
+      ; isField = isField-E
       }

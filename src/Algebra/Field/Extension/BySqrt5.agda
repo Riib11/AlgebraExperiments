@@ -39,7 +39,7 @@ postulate
 
 open import Algebra.Field.Extension.BySqrt _≡_ 5ℚ as ExtensionBySqrt public
   
-open ExtensionBySqrt.IsField-ExtensionBySqrt
+open IsField-E
   0ℚ
   1ℚ
   Rat._+_
@@ -51,11 +51,11 @@ open ExtensionBySqrt.IsField-ExtensionBySqrt
   public
 
 
-open Field field-ExtensionBySqrt public
+open Field field-E public
 
 -- the rationals extended by ``sqrt[5]``
 ℚ[sqrt[5]] : Set
-ℚ[sqrt[5]] = BySqrt
+ℚ[sqrt[5]] = E
 
 _+sqrt[5]_ : ℚ → ℚ → ℚ[sqrt[5]]
 a +sqrt[5] b = a +sqrt[α] b
@@ -66,7 +66,7 @@ a +sqrt[5] b = a +sqrt[α] b
 sqrt[5] : ℚ[sqrt[5]]
 sqrt[5] = 0ℚ +sqrt[5] 1ℚ
 
-sqrt[5]| : BySqrt≉0#′
+sqrt[5]| : E≉0#′
 sqrt[5]| = sqrt[5] # (λ ())
 
 sqrt[5]⁻¹ : ℚ[sqrt[5]]
@@ -93,20 +93,3 @@ _≟′_ : Decidable _≈′_
 ... | no ¬r≡t | yes s≡u = no λ { (r≡t , _  ) → ¬r≡t r≡t }
 ... | no ¬r≡t | no ¬s≡u = no λ { (r≡t , s≡u) → ¬s≡u s≡u }
 
-
--- --
--- -- order
--- --
-
--- _<_ : Rel ℚ[sqrt[5]] 0ℓ
--- (a +sqrt[α] b) < (c +sqrt[α] d) =
---   ((a Rat.* a) Rat.+ (5ℚ Rat.* (b Rat.* b))) Rat.<
---   ((c Rat.* c) Rat.+ (5ℚ Rat.* (d Rat.* d)))
-
--- _<?_ : Decidable _<_
--- (a +sqrt[α] b) <? (c +sqrt[α] d) =
---   ((a Rat.* a) Rat.+ (5ℚ Rat.* (b Rat.* b))) Rat.<?
---   ((c Rat.* c) Rat.+ (5ℚ Rat.* (d Rat.* d)))
-
--- -- ∣_∣ : ℚ[sqrt[5]] → ℚ[sqrt[5]]
--- -- ∣ a +sqrt[α] b ∣ = {!!} +sqrt[α] {!!}

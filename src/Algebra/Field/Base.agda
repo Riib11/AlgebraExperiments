@@ -76,7 +76,7 @@ module FieldModule {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (0# : A) where
 
 
 module _ where
-  open FieldModule
+  open FieldModule public
     renaming
       ( _≉0# to _raw-≉0#
       ; A≉0# to raw-A≉0#
@@ -219,5 +219,3 @@ module _ where
         ; semiringWithoutAnnihilatingZero
         ; isRing; +-abelianGroup
         )
-
--- open FieldModule public

@@ -199,7 +199,7 @@ postulate
     s ≈ₛ s′
 
 
-postulate
-  ∑-injective : ∀ a- b- →
-    (∑ a-) ≈ₛ (∑ b-) →
-    ∀ i → a- i ≡ b- i
+∑-injective : ∀ a- b- →
+  (∑ a-) ≈ₛ (∑ b-) →
+  ∀ i → a- i ≡ b- i
+∑-injective a- b- Hab i = Hab i
