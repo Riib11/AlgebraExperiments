@@ -1,4 +1,4 @@
-open import Level
+open import Level using (0ℓ)
 open import Relation.Binary
 
 open import Function
@@ -7,13 +7,13 @@ open import Relation.Nullary
 open import Data.Product
 open import Data.Sum
 open import Data.Maybe
-open import Data.Unit
+open import Data.Unit using (⊤; tt)
 open import Data.Empty
 open import Data.Nat as Nat using (ℕ; zero; suc)
 open import Data.Nat.Coprimality as Coprimality
 open import Data.Nat.Divisibility as Divisibility
 open import Data.Integer as Int using (ℤ)
-open import Data.Rational as Rat
+open import Data.Rational as Rat using (ℚ; mkℚ; 0ℚ; 1ℚ; ½)
 open import Data.Subset
 
 
@@ -34,7 +34,7 @@ open import Algebra.Field using (Field)
   coprime-5-1 = ∣1⇒≡1 ∘ proj₂
 
 postulate
-  no-sqrt[5] : ¬ ∃[ r ] ((r Rat.* r) ≡ 5ℚ)
+  5-squarefree : ¬ ∃[ r ] ((r Rat.* r) ≡ 5ℚ)
 
 
 open import Algebra.Field.Extension.BySqrt _≡_ 5ℚ as ExtensionBySqrt public
@@ -46,7 +46,7 @@ open ExtensionBySqrt.IsField-ExtensionBySqrt
   Rat._*_
   Rat.-_
   RatField._⁻¹
-  no-sqrt[5]
+  5-squarefree
   RatField.isField-ℚ
   public
 
@@ -67,12 +67,10 @@ sqrt[5] : ℚ[sqrt[5]]
 sqrt[5] = 0ℚ +sqrt[5] 1ℚ
 
 sqrt[5]| : BySqrt≉0#′
-sqrt[5]| = sqrt[5] # sqrt[5]≉0#′ where
-  postulate
-    sqrt[5]≉0#′ : sqrt[5] ≉′ 0#′
+sqrt[5]| = sqrt[5] # (λ ())
 
 sqrt[5]⁻¹ : ℚ[sqrt[5]]
-sqrt[5]⁻¹ = elem ((sqrt[5] # (λ ())) ⁻¹)
+sqrt[5]⁻¹ = 1# ÷ sqrt[5]|
 
 -- the golden ratio
 φ : ℚ[sqrt[5]]
@@ -82,7 +80,7 @@ sqrt[5]⁻¹ = elem ((sqrt[5] # (λ ())) ⁻¹)
 φ⁺ = φ
 
 φ⁻ : ℚ[sqrt[5]]
-φ⁻ = 1# -′ φ
+φ⁻ = ½ +sqrt[5] (Rat.- ½)
 
 
 -- useful derivatives
@@ -94,3 +92,21 @@ _≟′_ : Decidable _≈′_
 ... | yes r≡t | no ¬s≡u = no λ { (_   , s≡u) → ¬s≡u s≡u }
 ... | no ¬r≡t | yes s≡u = no λ { (r≡t , _  ) → ¬r≡t r≡t }
 ... | no ¬r≡t | no ¬s≡u = no λ { (r≡t , s≡u) → ¬s≡u s≡u }
+
+
+-- --
+-- -- order
+-- --
+
+-- _<_ : Rel ℚ[sqrt[5]] 0ℓ
+-- (a +sqrt[α] b) < (c +sqrt[α] d) =
+--   ((a Rat.* a) Rat.+ (5ℚ Rat.* (b Rat.* b))) Rat.<
+--   ((c Rat.* c) Rat.+ (5ℚ Rat.* (d Rat.* d)))
+
+-- _<?_ : Decidable _<_
+-- (a +sqrt[α] b) <? (c +sqrt[α] d) =
+--   ((a Rat.* a) Rat.+ (5ℚ Rat.* (b Rat.* b))) Rat.<?
+--   ((c Rat.* c) Rat.+ (5ℚ Rat.* (d Rat.* d)))
+
+-- -- ∣_∣ : ℚ[sqrt[5]] → ℚ[sqrt[5]]
+-- -- ∣ a +sqrt[α] b ∣ = {!!} +sqrt[α] {!!}

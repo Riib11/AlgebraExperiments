@@ -1,14 +1,15 @@
 module Algebra.Field.Rational where
 
 
-open import Relation.Binary.PropositionalEquality using (_≡_; _≢_)
+open import Relation.Binary.PropositionalEquality -- using (_≡_; _≢_; refl; inspect; [_])
 open import Relation.Nullary
-open import Data.Nat as Nat using (ℕ; zero; suc)
+open import Data.Nat as Nat using (ℕ; zero) renaming (suc to _+1)
 open import Data.Nat.Coprimality using (Coprime)
 open import Data.Integer as Int using (ℤ)
-open ℤ using (pos; negsuc)
-open import Data.Rational as Rat using (0ℚ; 1ℚ; _+_; _*_; -_; mkℚ)
+open ℤ renaming (pos to +_ ; negsuc to -[_+1])
+open import Data.Rational as Rat using (ℚ; 0ℚ; 1ℚ; _+_; _*_; -_; mkℚ)
 open import Data.Subset
+open import Data.Empty
 open import Algebra.Core
 open import Algebra.Field
 open FieldModule
@@ -26,19 +27,21 @@ open FieldModule
 
 -- (a / b)⁻¹ = (b / a)
 _⁻¹ : Op₁ (A≉0# _≡_ 0ℚ)
-r@(mkℚ (pos n) b-1 isCoprime # r≢0) ⁻¹ =
-  (mkℚ (pos (suc b-1)) n coprime-b-sn) # r⁻¹≢0 where
+(r@(mkℚ (+ n) d-1 coprime) # r≢0) ⁻¹ = Rat.1/_ r {n≢0} # r⁻¹≢0 where
+  open import Data.Rational.Unnormalised as RatUnn
   postulate
-    coprime-b-sn : Coprime (suc b-1) (suc n)
-    r⁻¹≢0 : mkℚ (pos (suc b-1)) n coprime-b-sn ≢ 0ℚ
-r@(mkℚ (negsuc n) b-1 isCoprime # p) ⁻¹ =
-  (mkℚ (negsuc (suc b-1)) (suc n) coprime-sb-ssn) # r⁻¹≢0 where
+    n≢0 : n RatUnn.≢0
+    r⁻¹≢0 : ¬ Rat.1/ mkℚ (+ n) d-1 coprime ≡ 0ℚ
+(r@(mkℚ (-[ n +1]) d-1 coprime) # r≢0) ⁻¹ = Rat.1/_ r {n+1≢0} # r⁻¹≢0 where
+  open import Data.Rational.Unnormalised as RatUnn
   postulate
-    coprime-sb-ssn : Coprime (suc (suc b-1)) (suc (suc n))
-    r⁻¹≢0 : (mkℚ (negsuc (suc b-1)) (suc n) coprime-sb-ssn) ≢ 0ℚ
+    coprime′ : Coprime (d-1 +1) (n +1)
+    n+1≢0 : (n +1) RatUnn.≢0
+    r⁻¹≢0 : ¬ mkℚ -[ d-1 +1] n coprime′ ≡ 0ℚ
+
 
 postulate
-    isField-ℚ : IsField _≡_ 0ℚ 1ℚ _+_ _*_ -_ _⁻¹
+  isField-ℚ : IsField _≡_ 0ℚ 1ℚ _+_ _*_ -_ _⁻¹
     
 
 field-ℚ : Field _ _

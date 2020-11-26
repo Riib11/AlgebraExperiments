@@ -12,6 +12,7 @@ open import Algebra.Structures as Structures
 open import Algebra.Bundles as Bundles
 
 open import Data.Subset
+open import Data.Product
 
 
 -- ================================================================
@@ -53,7 +54,7 @@ module FieldModule {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (0# : A) where
     *| H nx@(x # px) ny@(y # py) = (x * y) # (H nx ny)
 
     ÷ : A → A≉0# → A
-    ÷ a b = a * elem (b ⁻¹)
+    ÷ a b| = a * elem (b| ⁻¹)
 
     -- ``1#`` included as a nonzero
     1#| : (1# ≉ 0#) → A≉0#
@@ -61,12 +62,9 @@ module FieldModule {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (0# : A) where
 
     2# : A
     2# = 1# + 1#
-
+    
     postulate
-      2#| : (1# ≉ 0#) → A≉0#
-    -- 2#| 1#≉0# = 2# # 2#≉0# where
-    --   2#≉0# : 2# ≉ 0#
-    --   2#≉0# 2#≈0# = ?
+      2#| : A≉0#
                           
     record IsField : Set (a ⊔ ℓ) where
       field
@@ -139,7 +137,7 @@ module _ where
 
     _² : Op₁ A
     x ² = x * x
-  
+    
     --
     -- useful lemmas about fields
     --
@@ -148,6 +146,9 @@ module _ where
       *-preserves-≉0# : ∀ {a b} → a ≉0# → b ≉0# → (a * b) ≉0#
       a-b≈0#→a≈b : ∀ {a b} → a - b ≈ 0# → a ≈ b
 
+    -1# : A
+    -1# = - 1#
+
     2# : A
     2# = raw-2# _≈_ 0# 1# _+_ _*_ -_ _⁻¹
   
@@ -155,6 +156,21 @@ module _ where
     2#| = 2# # 2#≉0# where
       postulate
         2#≉0# : 2# ≉0#
+
+    3# : A
+    3# = 2# + 1#
+
+    4# : A
+    4# = 3# + 1#
+
+    5# : A
+    5# = 4# + 1#
+
+    6# : A
+    6# = 5# + 1#
+
+    7# : A
+    7# = 6# + 1#
                    
     open import Relation.Binary.Reasoning.Base.Single _≈_
       (IsEquivalence.refl (Ring.isEquivalence (CommutativeRing.ring commutativeRing)))
@@ -163,7 +179,7 @@ module _ where
     module _ where
       open CommutativeRing commutativeRing
         hiding
-          ( _≈_ ; _+_ ; _*_ ; 0# ; 1# )
+          ( _≈_ ; _+_ ; _-_ ; -_ ; _*_ ; 0# ; 1# )
       open IsAbelianGroup *-isAbelianGroup
         using (inverse)
 
@@ -173,6 +189,8 @@ module _ where
         x*x⁻¹≈1# : ∀ {x| : A≉0#} → (elem x| * elem (x| ⁻¹)) ≈ 1#
         x*y÷z*w≈x÷z*y÷w : ∀ {x y} {z| w| : A≉0#} →
           ((x * y) ÷ ((elem z| * elem w|) # (x|*y|≉0# {z|} {w|}))) ≈ ((x ÷ z|) * (y ÷ w|))
+        x-x≈0# : ∀ {x} → (x - x) ≈ 0#
+        -1*x≈-x : ∀ {x} → (-1# * x) ≈ (- x)
 
       x≈y*z→x÷z≈y : ∀ {x y z|} → x ≈ (y * elem z|) → (x ÷ z|) ≈ y
       x≈y*z→x÷z≈y {x} {y} {z # pz} H =

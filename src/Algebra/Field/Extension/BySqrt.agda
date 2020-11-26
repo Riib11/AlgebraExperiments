@@ -44,7 +44,7 @@ module IsField-ExtensionBySqrt
   (0# 1# : A)
   (_+_ _*_ : Op₂ A)
   (-_ : Op₁ A) (_⁻¹ : Op₁ (FieldModule.A≉0# _≈_ 0#))
-  (no-sqrt[α] : ¬ ∃[ x ] ((x * x) ≈ α)) -- required for simple `_⁻¹`
+  (α-squarefree : ¬ ∃[ x ] ((x * x) ≈ α)) -- required for simple `_⁻¹`
   (isField : IsField _≈_ 0# 1# _+_ _*_ -_ _⁻¹)
   where
   -- open IsField isField
@@ -55,6 +55,7 @@ module IsField-ExtensionBySqrt
                
   -- extended versions of ``IsField`` fields
 
+  infix 4 _≈′_
   _≈′_ : Rel BySqrt ℓ
   (a +sqrt[α] b) ≈′ (c +sqrt[α] d) = (a ≈ c) × (b ≈ d)
 
@@ -70,6 +71,9 @@ module IsField-ExtensionBySqrt
   1#′ : BySqrt
   1#′ = 1# +sqrt[α] 0#
 
+  -1#′ : BySqrt
+  -1#′ = -1# +sqrt[α] 0#
+
   sqrt[α] : BySqrt
   sqrt[α] = 0# +sqrt[α] 1#
                     
@@ -81,7 +85,7 @@ module IsField-ExtensionBySqrt
   (a +sqrt[α] b) *′ (c +sqrt[α] d) = ((a * c) + (α * (b * d))) +sqrt[α] ((a * d) + (b * c))
                                                                                         
   -′_  : Op₁ BySqrt
-  -′ (a +sqrt[α] b) = (- a) +sqrt[α] (- b)
+  -′ x = -1#′ *′ x
 
   _-′_ : Op₂ BySqrt
   x -′ y = x +′ (-′ y)
@@ -114,7 +118,8 @@ module IsField-ExtensionBySqrt
     open IsCommutativeRing isCommutativeRing public
       using
         ( *-isMagma ; zeroˡ ; zeroʳ ; *-identityˡ ; *-identityʳ ; *-assoc
-        ; +-isMagma ; +-identityˡ )
+        ; +-isMagma ; +-identityˡ
+        ; isRing )
       renaming ()
     open IsMagma *-isMagma public
       using (refl ; sym ; trans ; isEquivalence)
@@ -169,7 +174,7 @@ module IsField-ExtensionBySqrt
         (IsEquivalence.trans M′.isEquivalence)
 
   ¬x²≈αy|² : ∀ {x} {y| : A≉0#} → ¬ ((x * x) ≈ (α * (elem y| * elem y|)))
-  ¬x²≈αy|² {x} y|@{y # py} H = ⊥-elim (no-sqrt[α] ((x ÷ (y # py)) , ⋯≈α)) where
+  ¬x²≈αy|² {x} y|@{y # py} H = ⊥-elim (α-squarefree ((x ÷ (y # py)) , ⋯≈α)) where
     open ≈-Reasoning
     ⋯≈α : ((x ÷ (y # _)) * (x ÷ (y # _))) ≈ α
     ⋯≈α =
@@ -181,12 +186,8 @@ module IsField-ExtensionBySqrt
       ∼⟨ M.*-identityʳ α ⟩          α
       ∎
 
-  -- ¬x|²≈αy² : ∀ {x| : A≉0#} {y} → ¬ ((elem x| * elem x|) ≈ (α * (y * y)))
-  -- ¬x|²≈αy² x|@{x # px} {y} H = ⊥-elim (no-sqrt[α] {!!})
-  
-
-  ¬x|²≈αy|² : ∀ {x| y| : A≉0#} → ¬ ((elem x| * elem x|) ≈ (α * (elem y| * elem y|)))
-  ¬x|²≈αy|² x|@{x # px} y|@{y # py} H = ⊥-elim (no-sqrt[α] ((x ÷ (y # py)) , ⋯≈α)) where
+  ¬x|²≈αy|² : ∀ {(x # _) (y # _) : A≉0#} → ¬ ((x ²) ≈ (α * (y ²)))
+  ¬x|²≈αy|² x|@{x # px} y|@{y # py} H = ⊥-elim (α-squarefree ((x ÷ (y # py)) , ⋯≈α)) where
     open ≈-Reasoning
     ⋯≈α : ((x ÷ (y # _)) * (x ÷ (y # _))) ≈ α
     ⋯≈α =
@@ -198,33 +199,22 @@ module IsField-ExtensionBySqrt
       ∼⟨ M.*-identityʳ α ⟩          α
       ∎
 
-  -- ¬x|²≈αy|² : ∀ {x| y| : A≉0#} → ¬ ((elem x| * elem x|) ≈ (α * (elem y| * elem y|)))
-  -- ¬x|²≈αy|² {x # px} {y # py} H = ⊥-elim (no-sqrt[α] ((x ÷ (y # py)) , ⋯≈α))
-
-
--- ¬⊎→¬×¬ : ∀ {a b} {X : Set a} {Y : Set b} → ¬ (X ⊎ Y) → (¬ X) × (¬ Y)
-  -- ¬⊎→¬×¬ H = (λ HX → ⊥-elim (H (inj₁ HX))) , (λ HY → ⊥-elim (H (inj₂ HY)))
-
-  -- ¬×→¬⊎¬ : ∀ {a b} {X : Set a} {Y : Set b} → ¬ (X × Y) → (¬ X) ⊎ (¬ Y)
-
-  postulate
-    a≉0#′→x⊎y≉0# : ∀ {x y} → (x +sqrt[α] y) ≉0#′ → x ≉0# ⊎ y ≉0#
-
-  -- (a +sqrt[α] b) ⁻¹ = (a ÷ (a² - α b²)) +sqrt[α] (b ÷ (-a² + α b²))
   _⁻¹′  : Op₁ BySqrt≉0#′
-  (a@(x +sqrt[α] y) # pa) ⁻¹′ = a⁻¹ # A3 where
+  (a@(x +sqrt[α] y) # pa) ⁻¹′ = a⁻¹ # a⁻¹≉0#′ where
+  
+    d : A
+    d  = (x ²) - (α * (y ²))
     postulate
-      A1 : ¬ (((- (x ²)) + (α * (y ²))) ≈ 0#)
-      A2 : ¬ (((x ²) - (α * (y ²))) ≈ 0#)
+      d≉0# : d ≉0#
+    d| : A≉0#
+    d| = d # d≉0#
 
     a⁻¹ : BySqrt
-    a⁻¹ =
-      (x ÷ (((x ²) - (α * (y ²))) # A2)) +sqrt[α]
-      (y ÷ (((- (x ²)) + (α * (y ²))) # A1))
+    a⁻¹ = (x ÷ d|) +sqrt[α] ((- y) ÷ d|)
 
     postulate
-      A3 : a⁻¹ ≉0#′
-    
+      a⁻¹≉0#′ : a⁻¹ ≉0#′
+
 
   postulate
     1#′≉0#′ : 1#′ ≉′ 0#′
