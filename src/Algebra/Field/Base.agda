@@ -23,10 +23,10 @@ open import Data.Product
 -- that satisfy the following properties:
 -- 1. ``+`` is associative
 -- 2. ``+``, ``*`` are commutative
--- 3. ``+``, ``*`` have identities ``0#``, ``1#`` respectively (i.e. monoid)
+-- 3. ``+``, ``*`` have identities ``0#``, ``1#`` respectively (i.e. monoids)
 -- 4. ``+`` has inverse ``-`` (i.e. group)
--- 5. ``*`` has inverse ``⁻¹`` on nonzero elements (i.e. group on nonzeros)
--- 6. ``*`` distributes over ``+`` (i.e. distributive lattice)
+-- 5. ``*`` has inverse ``⁻¹`` on nonzero elements (i.e. group over nonzeros)
+-- 6. ``*`` distributes over ``+`` (i.e. ring)
 
 module FieldModule {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (0# : A) where
   open import Algebra.Structures as Structures
@@ -72,6 +72,7 @@ module FieldModule {a ℓ} {A : Set a} (_≈_ : Rel A ℓ) (0# : A) where
         isCommutativeRing     : IsCommutativeRing _≈_ _+_ _*_ -_ 0# 1#
         *-isNonzeroClosed     : IsClosed₂ _≉0# _*_
         *-isAbelianGroup      : IsAbelianGroup ≈| (*| *-isNonzeroClosed) (1#| 1#≉0#) _⁻¹
+    
 
 
 module _ where
