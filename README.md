@@ -1,5 +1,12 @@
 # README
 
+- [Module Organization](#Module-Organization)
+- [Fibonacci Sequence via Recursive Definition](#Fibonacci-Sequence-via-Recursive-Definition)
+- [Fibonacci via Closed Formula](#Fibonacci-via-Closed-Formula)
+- [Fields](#Fields)
+- [Algebraic Field Extensions by Square Root of Square-Free Number](#Algebraic-Field-Extensions-by-Square-Root-of-Square-Free-Number)
+- [Tasks](#Tasks)
+
 ## Module Organization
 
 ```
@@ -26,7 +33,7 @@ Subset.agda          # - predicated terms
 ```
 
 
-## Fibonacci via Recursive Formula
+## Fibonacci Sequence via Recursive Definition
 
 The Fibonacci sequence is a well-known sequence of natural numbers, and it is typically defined recursively as follows:
 
@@ -45,7 +52,7 @@ fibonacci-rec 1       = 1
 fibonacci-rec (suc (suc n)) = ficonacci-rec (suc n) + fibonacci-rec n
 ```
 
-## Fibonacci via Closed Formula over ℚ[sqrt[5]]
+## Fibonacci via Closed Formula
 
 There is in fact a closed formula for the nth Fibonacci number, which is the following:
 
@@ -192,3 +199,43 @@ From all this we can construct the `IsField` instance for a field extension.
 isField-ExtensionBySqrt : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
 isField-ExtensionBySqrt = _ -- omitted proofs of field properties
 ```
+
+
+## Tasks
+
+- algebraic structures
+  - [x] formalization of fields; in `Algebra.Field.Base` as `IsField`
+    - [x] implement natural exponentiation over fields
+      - [ ] implement fast natural exponentiation over fields using repeated squaring and binary representations
+  - [x] formalization of algebraic field extension by square-free square root; in `Algebra.Field.Base.Extension.BySqrt`
+    - [ ] prove that such an extension is a field i.e. fill in details for `isField-E`
+  - [x] `IsField` instantiation for `ℚ[sqrt[5]]`; in `Algebra.Field.Base.Extension.BySqrt5`
+  - [x] formalization of polynomials over fields; in `Algebra.Field.Polynomial`
+      - [ ] implement multiplicative inverse for nonzero polynomials
+      - [x] implement polynomial equivalence via normalization
+      - [ ] prove that polynomial equivalence is an equivalence relation
+  - [x] formalization of power series over fields; in `Algebra.Field.Polynomial`
+    - [ ] implement power series equivalence
+    - [ ] prove that power series equivalence is an equivalence relation
+    - [x] formalization of convergence of power series
+      - [ ] define constructively rather than postulating convergence rules
+    - [ ] prove that taking the limit of a convergent power series in injective
+    - [x] prove that power series construction is injective
+- Fibonacci sequence
+  - [x] implementation of recursive `fibonacci`; in `Fibonacci.Recursive`
+  - [x] implementation of closed `fibonacci`; in `Fibonacci.Closed`
+  - [x] correctness proof of embedding recursive `fibonacci` into `ℚ[sqrt[5]]`; as `F′≡F`
+  - [x] correctness proof of Fibonacci closed form
+    - [x] prove `g₀ ≈ₛ g₁`
+    - [ ] prove `g₁ ≈ₛ g₂`
+    - [ ] prove `g₃ ⟶∞ g₄`
+    - [ ] prove `f₀ ⟶∞ f₁`
+    - [ ] prove `f₁ ≈ₚ f₂`
+    - [ ] prove `f₃ ⟶∞ f₂`
+    - [ ] prove `f₃ ≈ₛ f₄`
+    - [x] prove `f₀ ≈ₛ f₃`
+    - [x] prove `f₀ ≈ₛ f₄`
+    - [x] prove `F (n +1) ≡ h (n +1)`
+    - [x] prove `F n ≡ h n`
+    - [x] prove `fibonacci-extended n ≡ F′ n`
+    - [x] prove main theorem: `fibonacci-extracted n ≡ fibonacci-recursive n`
