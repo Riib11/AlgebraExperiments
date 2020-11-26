@@ -1,0 +1,124 @@
+\documentclass{article}
+
+\usepackage[left=1in, right=1in, top=0.5in, bottom=0.5in]{geometry}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+
+\begin{document}
+
+\section*{Fibonacci Sequence Closed Form}
+
+The Fibonacci sequence $F_n$ is defined as follows:
+\begin{align*}
+  F_0 &= 0, &
+  F_1 &= 1, &
+  F_{n+2} &= F_{n+1} + F_n.
+\end{align*}
+
+\paragraph{Theorem.}
+The Fibonacci sequence has the following closed formula
+\[
+  F_n
+  =
+  \frac{1}{\sqrt{5}} \left(\phi_+^i - \phi_-^i\right).
+\]
+where
+$\phi_+ = \frac{1 + \sqrt{5}}{2}$ and
+$\phi_- = \frac{1 + \sqrt{5}}{2}$.
+% where
+% \begin{align*}
+%   \phi_+ &= \frac{1 + \sqrt{5}}{2}, &
+%   \phi_- &= \frac{1 + \sqrt{5}}{2}.
+% \end{align*}
+
+\begin{proof}
+Consider the infinite $x$-power series $f$ defined as
+\[
+  f = \sum_{i=0}^\infty F_{i+1} x^i,
+\]
+and suppose $0 < x < 1/2$ (e.g. $1/4$).
+Then
+\begin{align*}
+  (1 - x - x^2) f
+&=
+  \sum_{i=0}^\infty (1 - x - x^2) F_{i+1} x^i
+\\&=
+  \sum_{i=0}^\infty F_{i+1} (x^i - x^{i+1} - x^{i+2})
+\\&=
+  (F_1 x^0 - F_1 x^1 - F_1 x^2) +
+  (F_2 x^1 - F_2 x^2 - F_2 x^3) +
+  (F_3 x^2 - F_3 x^3 - F_3 x^4) + \cdots
+\\&=
+  F_1 x^0 +
+  (F_2 - F_1) x^1 +
+  (F_3 - F_1 - F_2) x^2 +
+  (F_4 - F_2 - F_3) x^3 +
+  \cdots
+\\&=
+  1 x^0 +
+  0 x^1 +
+  ((F_1 + F_2) - F_1 - F_2) x^2 +
+  ((F_2 + F_3) - F_2 - F_3) x^3 +
+  \cdots
+\\&=
+  1 +
+  0 +
+  0 x^2 +
+  0 x^3 +
+  \cdots
+\\&=
+  1
+\\\implies
+  f
+&=
+  \frac{1}{1 - x - x^2}
+\\&=
+  \frac{1}{\sqrt{5}} \left(
+    \frac{\phi_+}{1 - \phi_+} -
+    \frac{\phi_-}{1 - \phi_-}
+  \right).
+\end{align*}
+Since for $|x| < 1/2$, $\frac{1}{(1 - a x)} = \sum_{i=0}^\infty (a x)^n$,
+we have
+\begin{align*}
+  f
+&=
+  \frac{1}{\sqrt{5}} \left(
+    \frac{\phi_+}{1 - \phi_+} -
+    \frac{\phi_-}{1 - \phi_-}
+  \right)
+\\&=
+  \frac{1}{\sqrt{5}} \left(
+    \left(\phi_+ \sum_{i=0}^\infty \phi_+^i x^i\right) -
+    \left(\phi_-\sum_{i=0}^\infty \phi_-^i x^i\right)
+  \right)
+\\&=
+  \sum_{i=0}^\infty \left(
+    \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right) x^i
+  \right).
+\end{align*}
+Then finally,
+\begin{align*}
+  f
+=
+  \sum_{i=0}^\infty F_{i+1} x^i
+&=
+  \sum_{i=0}^\infty \left(
+    \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right) x^i
+  \right)
+\\\implies
+  F_{i+1}
+&=
+  \frac{1}{\sqrt{5}} \left(\phi_+^{i+1} - \phi_-^{i+1}\right)
+\\\implies
+  F_i
+&=
+  \frac{1}{\sqrt{5}} \left(\phi_+^i - \phi_-^i\right).
+\end{align*}
+\end{proof}
+
+
+\end{document}
