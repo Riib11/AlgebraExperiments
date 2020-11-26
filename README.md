@@ -10,11 +10,11 @@
 ## Module Organization
 
 ```
-Fibonacci/             # the nth Fibonacci number
+Fibonacci/           # the nth Fibonacci number
 Recursive.agda       # - recursive definition
 Closed.agda          # - closed definition and correctness
 
-Algebra/               # algebraic structures
+Algebra/             # algebraic structures
 
 Field/               # - fields
 Base.agda            #   - formalization of mathematical field
@@ -25,10 +25,10 @@ Field.agda
 
 Extension/           # - field extensions (FE)
 Algebraic/           #   - algebraic field extensions (AFE)
-	  BySqrt.agda    #   - AFE by square root
-  BySqrt5.agda       #   - AFE of ℚ by sqrt[5]
+	  E.agda         #   - AFE by square root
+  E5.agda            #   - AFE of ℚ by sqrt[5]
 
-Data/                  # general data structures
+Data/                # general data structures
 Subset.agda          # - predicated terms
 ```
 
@@ -40,16 +40,16 @@ The Fibonacci sequence is a well-known sequence of natural numbers, and it is ty
 ```
 The 0th Fibonacci number is 0.
 The 1st Fibonacci number is 1.
-The (n+2)th Fibonacci number is the sum of the (n+1)th and nth Fibonacci numbers, where n ≥ 0.
+The (n+2)th Fibonacci number is the sum of the (n+1)th and nth Fibonacci numbers, for n ≥ 0.
 ```
 
-The module `Fibonacci.Recursive` implements a function `fibonacci-rec : ℕ → ℕ` that meets the specification above exactly. It is constructed as follows:
+The module `Fibonacci.Recursive` implements a function `fibonacci-recursive : ℕ → ℕ` that meets the specification above exactly. It is constructed as follows:
 
 ```agda
-fibonacci-rec : ℕ → ℕ
-fibonacci-rec 0       = 0
-fibonacci-rec 1       = 1
-fibonacci-rec (suc (suc n)) = ficonacci-rec (suc n) + fibonacci-rec n
+fibonacci-recursive : ℕ → ℕ
+fibonacci-recursive 0       = 0
+fibonacci-recursive 1       = 1
+fibonacci-recursive (suc (suc n)) = ficonacci-rec (suc n) + fibonacci-recursive n
 ```
 
 ## Fibonacci via Closed Formula
@@ -61,15 +61,16 @@ The nth Fibonacci number is (φ ^ n - (1 - φ) ^ n) / sqrt[5]
 ```
 
 where `φ = (1/2)(1 + sqrt[5])` is the golden ratio.
+See `doc/fibonacci/main.pdf` for a mathematical deriviation of this closed form.
 Just as before, we can formalize this specification in Agda straightforwardly:
 
 ```agda
-fibonacci-ext n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
+fibonacci-extended n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
 ```
 
 Observe that the type signature is missing --- let us derive what it must be.
-For `fibonacci-rec`, we only needed addition, and so were safely working over just monoid of addition over `ℕ`, and so the signature `ℕ → ℕ` was perfectly safe.
-However, in `fibonacci-ext`, there are few new capabilities used.
+For `fibonacci-recursive`, we only needed addition, and so were safely working over just monoid of addition over `ℕ`, and so the signature `ℕ → ℕ` was perfectly safe.
+However, in `fibonacci-extended`, there are few new capabilities used.
 1. To use subtraction, we must have an addition group.
 2. To use exponentiation, we must have a multiplication monoid.
 3. To use division by nonzero elements, we must have a multiplication group over nonzero elements.
@@ -81,11 +82,11 @@ the field to use should be the rational number field, `ℚ`.
 Additionally since we are using `sqrt[5]` we must also extend `ℚ` with `sqrt[5]`, written `ℚ[sqrt[5]]`.
 Since `sqrt[5]` is a zero of the `ℚ`-polynomial `X^2 - 5` (i.e. is algebraic), this is an algebraic field extension, which is a field itself.
 
-So, we can type `fibonacci-ext` like so:
+So, we can type `fibonacci-extended` like so:
 
 ```agda
-fibonacci-ext : ℕ → ℚ[sqrt[5]]
-fibonacci-ext n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
+fibonacci-extended : ℕ → ℚ[sqrt[5]]
+fibonacci-extended n = (φ ^ n - (1 - φ) ^ n) / sqrt[5]
 ```
 
 But how exactly is `ℚ[sqrt[5]]` defined in Agda?
@@ -147,15 +148,15 @@ A simple procedure for producing some algebraic field extensions is by extending
 We can encode a term in such a field extension as follows, which is defined in `Algebra.Field.Extension.BySqrt`.
 
 ```agda
-record BySqrt : Set a where
-constructor _+sqrt[α]_
-field
-  internal : A
-  external : A
+record E : Set a where
+  constructor _+sqrt[α]_
+  field
+    internal : A
+    external : A
 ```
 
 Here, `A` is the original field.
-For a term of `BySqrt`,
+For a term of `E`,
 its `internal` component resides in the original field,  and
 the `external` component is extended by the new term `sqrt[α]`.
 
@@ -163,31 +164,31 @@ Then we can define the extended terms necessary to form a field in terms of the 
 The `′` suffix indicates that the term is the extended version of the usual field term.
 
 ```agda
-0#′ : BySqrt
+0#′ : E
 0#′ = 0# +sqrt[α] 0#
 
-1#′ : BySqrt
+1#′ : E
 1#′ = 1# +sqrt[α] 0#
 
--1#′ : BySqrt
+-1#′ : E
 -1#′ = -1# + sqrt[α] 0#
 
-_≈′_ : Rel BySqrt ℓ
+_≈′_ : Rel E ℓ
 (a +sqrt[α] b) ≈′ (c +sqrt[α] d) = (a ≈ c) × (b ≈ d)
 
-_+′_ : Op₂ BySqrt
+_+′_ : Op₂ E
 (a +sqrt[α] b) +′ (c +sqrt[α] d) = (a + c) +sqrt[α] (b + d)
 
-_*′_ : Op₂ BySqrt
+_*′_ : Op₂ E
 (a +sqrt[α] b) *′ (c +sqrt[α] d) =
     ((a * c) + (α * (b * d))) +sqrt[α]
     ((a * d) + (b * c))
 
--′_  : Op₁ BySqrt
+-′_  : Op₁ E
 -′ x = -1#′ *′ x
 
 -- omitted proofs of ≉0#′
-_⁻¹′  : Op₁ BySqrt≉0#′
+_⁻¹′  : Op₁ E≉0#′
 (a@(x +sqrt[α] y) # pa) ⁻¹′ =
     ((  x  ÷ ((x ²) - (α * (y ²)) # _)) +sqrt[α]
     ((- y) ÷ ((x ²) - (α * (y ²)) # _))) # _
@@ -196,8 +197,8 @@ _⁻¹′  : Op₁ BySqrt≉0#′
 From all this we can construct the `IsField` instance for a field extension.
 
 ```agda
-isField-ExtensionBySqrt : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
-isField-ExtensionBySqrt = _ -- omitted proofs of field properties
+isField-ExtensionE : IsField _≈′_ 0#′ 1#′ _+′_ _*′_ -′_ _⁻¹′
+isField-ExtensionE = _ -- omitted proofs of field properties
 ```
 
 
@@ -237,5 +238,5 @@ isField-ExtensionBySqrt = _ -- omitted proofs of field properties
     - [x] prove `f₀ ≈ₛ f₄`
     - [x] prove `F (n +1) ≡ h (n +1)`
     - [x] prove `F n ≡ h n`
-    - [x] prove `fibonacci-extended n ≡ F′ n`
-    - [x] prove main theorem: `fibonacci-extracted n ≡ fibonacci-recursive n`
+    - [x] prove `fibonacci-extendedended n ≡ F′ n`
+    - [x] prove main theorem: `fibonacci-extendedracted n ≡ fibonacci-recursiveursive n`
